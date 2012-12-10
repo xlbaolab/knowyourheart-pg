@@ -840,6 +840,12 @@ var User = StackMob.User.extend({
     if (res.WarningCode && res.WarningCode !== "0") {
       this.archimedes_error = "Warning code " + res.WarningCode + " from Archimedes";
       res = null;
+    } else if (_.size(res.ErrorMessageHashMap) > 0) {
+      for (var key in res.ErrorMessageHashMap) {
+        this.archimedes_error = res.ErrorMessageHashMap[key];
+        break;
+      }
+      res = null;
     } else if (!res.Risk) {
       this.archimedes_error = "Bad response from Archimedes";
       res = null;
@@ -1938,13 +1944,6 @@ var SurveyView = Backbone.View.extend({
       }
     }
 
-    this.$("form").validator({
-      message: "<div><em/></div>", // em element is the arrow
-      offset: [-16, -30],
-      position: "top left",
-      singleError: true
-    });
-    
     this.nextPageHref = this.$("button[type=submit]").attr("href");
   },
   events : {
@@ -1969,10 +1968,9 @@ var SurveyView = Backbone.View.extend({
     // this.model.set(o);
   },
   handlePagebeforehide : function(e, data) {
-    var validator = this.$("form").data("validator");
     // check when user clicks our/browser's back button (unnecessarily called
     // twice for submit but seems harmless)
-    validator.checkValidity();
+    this.validator.checkValidity();
     
     // save if input changed
     var changed = false;
@@ -2002,7 +2000,7 @@ var SurveyView = Backbone.View.extend({
     }
     
     // clear error tooltips
-    validator.reset();
+    this.validator.reset();
 
     var nextPageHref = this.$("button[type=submit]").attr("href");
     if (!this.model.hasCompletedRequired() && nextPageHref !== "#welcome") {
@@ -2051,6 +2049,18 @@ var SurveyView = Backbone.View.extend({
     this.$("input.ui-slider-input").slider("refresh");
     this.$("select[data-role=slider]").slider("refresh");
     this.$("select[data-role!=slider]").selectmenu("refresh");
+    
+    // must initialize after jqm controls
+    if (!this.validator) {
+      this.$("form").validator({
+        message : "<div><em/></div>", // em element is the arrow
+        offset : [-16, -30],
+        position : "top left",
+        singleError : true
+      });
+      this.validator = this.$("form").data("validator");
+    }
+    
     this.isLoading = false;
   },
   handleSubmit : function(e) {

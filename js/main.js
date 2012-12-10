@@ -265,7 +265,7 @@ var RESULTS_TEMPLATE = _.template('\
 
 var RESULTS_POPUP_TEMPLATE = _.template('\
   <a href="#assessment2" data-rel="back" data-role="button" data-theme="a"\
-  data-icon="delete" data-iconpos="notext" class="ui-btn-right"> Close </a>\
+  data-icon="delete" data-iconpos="notext" class="ui-btn-right"> </a>\
   <h3>Your Cardiovascular Risk</h3>\
   <p class="note" <% if (!showScreeningReqNote) print(\'style="display:none;"\'); %>>\
     <em>Note: To give you a more accurate risk assessment, we need to know \

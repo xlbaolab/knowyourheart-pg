@@ -691,7 +691,9 @@ StackMob.init({
 function wrapRemoteError(fn) {
   return function(onError, originalModel, options) {
     // console.debug("wrapRemoteError");
-    originalModel.isFetchingRemote = false;
+    if (originalModel) {
+      originalModel.isFetchingRemote = false;
+    }
     fn.apply(null, arguments);
   }
 }
@@ -699,7 +701,9 @@ function wrapRemoteError(fn) {
 function wrapRemoteSuccess(fn) {
   return function(resp, status, xhr) {
     // console.debug("wrapRemoteSuccess");
-    gCurrentUser.isFetchingRemote = false;
+    if (gCurrentUser) {
+      gCurrentUser.isFetchingRemote = false;
+    }
     fn.apply(null, arguments);
   }
 }
@@ -707,7 +711,9 @@ function wrapRemoteSuccess(fn) {
 function wrapLocalError(fn) {
   return function(onError, originalModel, options) {
     // console.debug("wrapLocalError");
-    originalModel.isFetchingLocal = false;
+    if (originalModel) {
+      originalModel.isFetchingRemote = false;
+    }
     fn.apply(null, arguments);
   }
 }
@@ -715,7 +721,9 @@ function wrapLocalError(fn) {
 function wrapLocalSuccess(fn) {
   return function(resp, status, xhr) {
     // console.debug("wrapLocalSuccess");
-    gCurrentUser.isFetchingLocal = false;
+    if (gCurrentUser) {
+      gCurrentUser.isFetchingLocal = false;
+    }
     fn.apply(null, arguments);
   }
 }
@@ -806,6 +814,7 @@ var User = StackMob.User.extend({
     }
 
     console.debug("querying Archimedes...");
+    console.dir(request);
     $.post(
       ARCHIMEDES_URL,
       request,
@@ -1699,30 +1708,27 @@ var ResultView2 = Backbone.View.extend({
   renderStatus : function() {
     var user = this.model;
     var $statusBar = this.$(".status-bar");
-    var $retryBtn = $statusBar.find("input[type=button]");
     var message;
     
     switch(user.get("risk_state")) {
     case User.RISK_STATE.CALCULATING:
-      this.showStatus(true);
+      this.showStatus(true, false);
       message = "Calculating&hellip;";
-      $retryBtn.button("disable");
       break;
     case User.RISK_STATE.CHANGED:
-      this.showStatus(true);
+      this.showStatus(true, true);
       message = user.archimedes_error ? "Calculation failed: " + user.archimedes_error : "";
-      $retryBtn.button("enable");
       break;
     case User.RISK_STATE.UP_TO_DATE:
-      this.showStatus(false, "");
+      this.showStatus(false, true);
       message = "&nbsp;";
-      $retryBtn.button("enable");
       break;
     }
     $statusBar.find("p").html(message);
   },
-  showStatus : function(show) {
+  showStatus : function(show, enabled) {
     var $statusBar = this.$(".status-bar");
+    var $retryBtn = $statusBar.find("input[type=button]");
     var isVisible = this.$el.is(":visible"); 
     if (show) {
       if (isVisible) {
@@ -1736,6 +1742,9 @@ var ResultView2 = Backbone.View.extend({
       } else {
         $statusBar.hide();
       }      
+    }
+    if (isVisible) {
+      $retryBtn.button(enabled ? "enable" : "disable");
     }
   }
 });
@@ -2066,7 +2075,7 @@ var SurveyView = Backbone.View.extend({
     var $submit = this.$("button[type=submit]");
     var options = {};
     if (REQUIRED_PAGES[this.prevPageId] || EXTRA_PAGES[this.prevPageId]) {
-      options.transition = "fade";
+      options.transition = "slide";
     } else {
       options.reverse = $submit.attr("data-icon") !== "newarrow-r";
       options.transition = "slide";

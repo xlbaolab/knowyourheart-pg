@@ -16,7 +16,7 @@
 		Albert Chi . Peter Tseng
     </author>
 
-	<preference name="phonegap-version" value="2.0.0" />
+	<preference name="phonegap-version" value="2.2.0" />
 	<preference name="orientation" value="portrait" />
 	<preference name="prerendered-icon" value="true" />
 	

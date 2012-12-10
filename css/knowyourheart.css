@@ -1074,10 +1074,10 @@ div#facts {
  * assessment
  *****************************************************************************/
 [risk-rating="1"] {
-  color: #70BD54;  
+  color: #32A7DA;  
 }
 [risk-rating="2"] {
-  color: #32A7DA;
+  color: #70BD54;
 }
 [risk-rating="3"] {
   color: #FCD100;

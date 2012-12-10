@@ -86,11 +86,11 @@ var POPUP_LOCKED_HTML = '\
   <div data-role="popup" id="popupLocked" class="ui-content">\
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"> Close </a>\
     <strong>THIS FEATURE IS LOCKED</strong>\
-    <p class="explanation"></p>\
     <p>\
       Enter your blood pressure, cholesterol, and HbA1c (if applicable)\
       to unlock.\
     </p>\
+    <p class="explanation"></p>\
   </div>\
 ';
 
@@ -220,7 +220,7 @@ var RISK_DOC_REC = {
 // };
 var RISK_RATING = {
   1 : "low",
-  2 : "moderate",
+  2 : "moderately high",
   3 : "high",
   4 : "very high",
   5 : "extremely high",

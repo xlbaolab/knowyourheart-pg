@@ -906,6 +906,7 @@ var User = StackMob.User.extend({
         this.set("risk_state", User.RISK_STATE.CHANGED);
       } else if (attr === "risk_state") {
         console.debug("user's " + attr + " changed to " + val + " - triggering " + User.RISK_STATE_CHANGE_EVENT);
+        // console.trace();
         this.trigger(User.RISK_STATE_CHANGE_EVENT, val, this);
       } else if (attr !== "lastmoddate"){
         console.debug("user's " + attr + " changed to " + val);
@@ -1471,8 +1472,9 @@ var OptionsView = Backbone.View.extend({
     this.$("#popup-confirm-reset").popup("close");
   },
   handleReset : function(evt) {
-    this.model.reset();
-    this.model.save();
+    // this.model.reset();
+    // this.model.save();
+    window.localStorage.clear();
     $.mobile.changePage("app.html", {
       transition : "fade"
     });
@@ -1482,21 +1484,22 @@ var OptionsView = Backbone.View.extend({
 
 var ProfileView = Backbone.View.extend({
   initialize : function(attrs) {
+    this.render();
     this.model.on(User.RISK_STATE_CHANGE_EVENT, this.handleRiskChange, this);
   },
   events : {
-    "pagebeforeshow" : "updateView"
+    "pagebeforeshow" : "handlePageBeforeShow"
+  },
+  handlePageBeforeShow : function(e, data) {
+    this.model.calculateRisk();
+    this.render();
   },
   handleRiskChange : function(state, user) {
-    switch(state) {
-    case User.RISK_STATE.UP_TO_DATE:
-      this.updateView();
-      break;
+    if (this.model.get("risk_state") === User.RISK_STATE.UP_TO_DATE) {
+      this.render();
     }
   },
-  updateView : function(e, data) {
-    this.model.calculateRisk();
-    
+  render : function() {
     var text;
     var user = this.model;
 

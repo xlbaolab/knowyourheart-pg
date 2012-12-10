@@ -27,7 +27,8 @@ p, li, .ui-controlgroup-label {
 p.note {
   font-size: 1.2em;
 }
-.ui-footer li {
+.ui-footer li,
+.ui-navbar li {
   font-size: inherit;
 }
 

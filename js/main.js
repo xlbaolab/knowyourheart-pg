@@ -220,7 +220,7 @@ var RISK_DOC_REC = {
 // };
 var RISK_RATING = {
   1 : "low",
-  2 : "moderately high",
+  2 : "moderate",
   3 : "high",
   4 : "very high",
   5 : "extremely high",

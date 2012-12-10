@@ -1,0 +1,39 @@
+{"success":true,
+"providers":[
+	{
+		"address1":"1800 South Street",
+		"address2":null,
+		"city":"Philadelphia",
+		"crossStreet": "18th St and South Street,
+		"description":"This location is really close to AC's house",
+		"distance":1.5,
+		"lat":39.944736,
+		"lon":-75.171786,
+		"name":"Walgreens",
+		"phone":"267-273-7585",
+		"precise":true,
+		"state":"PA",
+		"url":"http:\/\/walgreens.com",
+		"urlCaption":"www.walgreens.com",
+		"zip":"19146"
+	},
+	{
+		"address1":"3401 Walnut Street",
+		"address2":null,
+		"city":"Philadelphia",
+		"crossStreet":"Walnut St and 34th St",
+		"description":"Closest CVS to AC's house",
+		"distance":0.75,
+		"lat":39.956594,
+		"lon":-75.192858,
+		"name":"CVS",
+		"phone":"215-662-1333",
+		"precise":true,
+		"state":"PA",
+		"url":"http:\/\/www.cvs.com",
+		"urlCaption":"www.cvs.com",
+		"zip":"19104"
+	}
+],
+"errors":[]
+}

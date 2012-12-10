@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <widget xmlns = "http://www.w3.org/ns/widgets"
+        xmlns:gap = "http://phonegap.com/ns/1.0"
+        id        = "com.xlbaolab.knowyourheart"
+        version   = "1.0.0">
+
+    <!-- versionCode is optional and Android only -->
+
+    <name>Your Heart</name>
+
+    <description>
+        Calculate your cardiovascular disease risk.
+    </description>
+
+    <author href="https://knowyourheart.info" email="help@knowyourheart.info">
+		Albert Chi . Peter Tseng
+    </author>
+
+	<preference name="phonegap-version" value="2.0.0" />
+	<preference name="orientation" value="portrait" />
+	<preference name="prerendered-icon" value="true" />
+	
+	<!-- Icons -->
+	
+	<icon src="icon.png" />
+	<icon src="icons/ios/icon.png" width="57" height="57" />
+	<icon src="icons/ios/icon-72.png" gap:platform="ios" width="72" height="72" />
+	<icon src="icons/ios/icon_at_2x.png" width="114" height="114" />
+
+	<icon src="icons/android/android-36.png" gap:platform="android" gap:density="ldpi" />
+	<icon src="icons/android/android-48.png" gap:platform="android" gap:density="mdpi" />
+	<icon src="icons/android/android-72.png" gap:platform="android" gap:density="hdpi" />
+	<icon src="icons/android/android-96.png" gap:platform="android" gap:density="xhdpi" />
+
+<!--	<icon src="icons/bb/icon.png" gap:platform="blackberry" />
+	<icon src="icons/bb/icon_hover.png" gap:platform="blackberry" gap:state="hover"/>
+	<icon src="icons/winphone/icon.png" gap:platform="winphone" />-->
+	<!-- winphone requires a jpg for the tile icons
+	<icon src="icons/winphone/tileicon.png" gap:platform="winphone" gap:role="background" />
+	<icon src="icons/webos/icon.png" gap:platform="webos" />
+	<icon src="icons/webos/miniicon.png" gap:platform="webos" gap:role="mini" /> -->
+	
+	<!-- Splash Screens -->
+	<gap:splash src="splash.png" />
+	<gap:splash src="splash/kyh_splash_768x1004.png" width="768" height="1004" />
+	<gap:splash src="splash/kyh_splash_1536x2008.png" width="1536" height="2008" />
+	<gap:splash src="splash/kyh_splash_320x480.png" width="320" height="480" />
+	<gap:splash src="splash/kyh_splash_640x960.png" width="640" height="960" />
+	<gap:splash src="splash/kyh_splash_200x320.png" gap:platform="android" gap:density="ldpi" />
+	<gap:splash src="splash/kyh_splash_320x480.png" gap:platform="android" gap:density="mdpi" />
+	<gap:splash src="splash/kyh_splash_480x800.png" gap:platform="android" gap:density="hdpi" />
+	<gap:splash src="splash/kyh_splash_720x1280.png" gap:platform="android" gap:density="xhdpi" />
+<!-- 	<gap:splash src="splash/bb/splash.png" gap:platform="blackberry" /> -->
+	<!--<gap:splash src="splash/winphone/splash.jpg" gap:platform="winphone" />-->
+</widget>

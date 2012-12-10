@@ -1,0 +1,75 @@
+/**
+ * jqmTooltip
+ * styles largely taken from Matteo Spinelli's "Add to Home" script: http://cubiq.org/add-to-home-screen
+*/
+
+/*
+ * Main container
+ */
+.jqmTooltip {
+  z-index: 9999;
+  position: absolute;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  text-align: center;
+  background: #494a4b;
+  -moz-background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.25);
+  color: #eeeeee;
+  text-shadow: 0 1px 0 #3A3B3C;
+  font-size: 1.4em;
+  padding: 10px;
+}
+
+/**
+ *
+ * The balloon arrow
+ *
+ */
+.jqmTooltip .arrow {
+	position:absolute;
+	width:16px; height:16px;
+	left:50%;
+	border-width:0 1px 1px 0;
+	border-style:solid;
+	border-color:#494a4b;	
+	margin-left:-8px;
+	-moz-border-bottom-right-radius:2px;
+	-webkit-border-bottom-right-radius:2px;
+	border-bottom-right-radius:2px;
+}
+
+.jqmTooltip.over .arrow {
+	-moz-transform: rotate(45deg);
+	-o-transform: rotate(45deg);
+	-webkit-transform:rotateZ(45deg);
+	transform: rotate(45deg);
+	background: #494a4b;
+	bottom:-8px; 
+}
+
+.jqmTooltip.under .arrow {
+	-moz-transform: rotate(225deg);
+	-o-transform: rotate(225deg);
+	-webkit-transform:rotateZ(225deg);
+	transform: rotate(225deg);
+	background: #494a4b;
+	top:-9px;
+}
+
+/**
+ *
+ * Close button
+ *
+ */
+.jqmTooltip .close {
+
+}

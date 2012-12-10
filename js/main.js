@@ -86,11 +86,11 @@ var POPUP_LOCKED_HTML = '\
   <div data-role="popup" id="popupLocked" class="ui-content">\
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"> Close </a>\
     <strong>THIS FEATURE IS LOCKED</strong>\
-    <p class="explanation"></p>\
     <p>\
       Enter your blood pressure, cholesterol, and HbA1c (if applicable)\
       to unlock.\
     </p>\
+    <p class="explanation"></p>\
   </div>\
 ';
 
@@ -220,7 +220,7 @@ var RISK_DOC_REC = {
 // };
 var RISK_RATING = {
   1 : "low",
-  2 : "moderate",
+  2 : "moderately high",
   3 : "high",
   4 : "very high",
   5 : "extremely high",
@@ -906,6 +906,7 @@ var User = StackMob.User.extend({
         this.set("risk_state", User.RISK_STATE.CHANGED);
       } else if (attr === "risk_state") {
         console.debug("user's " + attr + " changed to " + val + " - triggering " + User.RISK_STATE_CHANGE_EVENT);
+        // console.trace();
         this.trigger(User.RISK_STATE_CHANGE_EVENT, val, this);
       } else if (attr !== "lastmoddate"){
         console.debug("user's " + attr + " changed to " + val);
@@ -1471,8 +1472,9 @@ var OptionsView = Backbone.View.extend({
     this.$("#popup-confirm-reset").popup("close");
   },
   handleReset : function(evt) {
-    this.model.reset();
-    this.model.save();
+    // this.model.reset();
+    // this.model.save();
+    window.localStorage.clear();
     $.mobile.changePage("app.html", {
       transition : "fade"
     });
@@ -1482,21 +1484,22 @@ var OptionsView = Backbone.View.extend({
 
 var ProfileView = Backbone.View.extend({
   initialize : function(attrs) {
+    this.render();
     this.model.on(User.RISK_STATE_CHANGE_EVENT, this.handleRiskChange, this);
   },
   events : {
-    "pagebeforeshow" : "updateView"
+    "pagebeforeshow" : "handlePageBeforeShow"
+  },
+  handlePageBeforeShow : function(e, data) {
+    this.model.calculateRisk();
+    this.render();
   },
   handleRiskChange : function(state, user) {
-    switch(state) {
-    case User.RISK_STATE.UP_TO_DATE:
-      this.updateView();
-      break;
+    if (this.model.get("risk_state") === User.RISK_STATE.UP_TO_DATE) {
+      this.render();
     }
   },
-  updateView : function(e, data) {
-    this.model.calculateRisk();
-    
+  render : function() {
     var text;
     var user = this.model;
 

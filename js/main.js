@@ -1,23 +1,24 @@
 /**
- * Protect console logging calls, e.g. F12 dev tools must be open on IE for
- * console to be defined.
+ * Protect window.console method calls, e.g. console is not defined on IE
+ * unless dev tools are open, and IE doesn't define console.debug
  */
-if ( typeof console === "undefined" || !console.log) {
-  window.console = {
-    debug : function() {
-    },
-    trace : function() {
-    },
-    log : function() {
-    },
-    info : function() {
-    },
-    warn : function() {
-    },
-    error : function() {
-    }
-  };
-}
+(function() {
+  if (!window.console) {
+    window.console = {};
+  }
+  // union of Chrome, FF, IE, and Safari console methods
+  var m = [
+    "log", "info", "warn", "error", "debug", "trace", "dir", "group",
+    "groupCollapsed", "groupEnd", "time", "timeEnd", "profile", "profileEnd",
+    "dirxml", "assert", "count", "markTimeline", "timeStamp", "clear"
+  ];
+  // define undefined methods as noops to prevent errors
+  for (var i = 0; i < m.length; i++) {
+    if (!window.console[m[i]]) {
+      window.console[m[i]] = function() {};
+    }    
+  } 
+})();
 
 console.debug("loading main.js")
 
@@ -26,10 +27,11 @@ console.debug("loading main.js")
  */
 var IS_IOS = navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false;
 var MAPS_URL = IS_IOS ? "http://maps.apple.com/maps?q=" : "http://maps.google.com/maps?q=";
+var ARCHIMEDES_KEY = 424242424;
 var ARCHIMEDES_URL = "https://demo-indigo4health.archimedesmodel.com/IndiGO4Health/IndiGO4Health";
 // callback indicates JSONP, which seems necessary
-var SURESCRIPTS_URL = "https://millionhearts.surescripts.net/test/Provider/Find?callback=?";
-var SURESCRIPTS_API_KEY = "3a0a572b-4f5d-47a2-9a75-819888576454";
+var SURESCRIPTS_URL = "https://millionhearts.surescripts.net/Provider/Find?callback=?";
+var SURESCRIPTS_API_KEY = "d2722865-2f1f-4111-b63f-cdb533783f8e";
 
 /*
  * Text
@@ -161,7 +163,7 @@ var gNextStepsItems = {
     clazz : "share",
     href : "#share",
     primary : "Share",
-    secondary : "Your friends and family need to know their risk",
+    secondary : "Your friends and family need to know their risk"
   }
 };
 
@@ -751,7 +753,7 @@ var User = StackMob.User.extend({
     if (_.isUndefined(attrs)) {
       attrs = {
         username : generateRandomString(),
-        password : generateRandomString(),
+        password : generateRandomString()
       };
       this.set(attrs);
       
@@ -788,7 +790,9 @@ var User = StackMob.User.extend({
     this.archimedes_error = "";
 
     // build request
-    var request = {};
+    var request = {
+      apikey : ARCHIMEDES_KEY
+    };
     for (attr in ARCHIMEDES_ATTRS) {
       var userAttr = ARCHIMEDES_ATTRS[attr];
       var val = userAttr === null ? null : this.get(userAttr);
@@ -969,14 +973,20 @@ var User = StackMob.User.extend({
   }
 });
 
-/*
- * Model
- */
+var ScreeningLoc = StackMob.Model.extend({
+  schemaName : "screening_location"
+});
+var ScreeningLocs = StackMob.Collection.extend({
+  model : ScreeningLoc
+});
+
 var LocationsModel = Backbone.Model.extend({
   initialize : function(attrs) {
     this.geocoder = new google.maps.Geocoder();
     this.providers = null;
     this.location = null;
+    this.queryingDatabase = false;
+    this.queryingSurescripts = false;
 
     _.extend(this, Backbone.Events);
   },
@@ -1020,25 +1030,106 @@ var LocationsModel = Backbone.Model.extend({
 
     this.location = result[0].geometry.location;
     this.trigger(LocationsModel.LOCATION_CHANGE_EVENT, this.location);
-    this.querySurescripts();
+    this.queryForLocations();
   },
   handleGeolocate : function(position) {
     this.location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
     this.trigger(LocationsModel.LOCATION_CHANGE_EVENT, this.location);
-    this.querySurescripts();
+    this.queryForLocations();
+  },
+  handleDatabase : function(result) {
+    this.queryingDatabase = false;
+    // convert to json
+    var locs = result.models;
+    var providers = new Array(locs.length);
+    for (var i=0; i<locs.length; i++) {
+      var p = locs[i];
+      providers[i] = {
+        "address1" : p.get("address1"),
+        "address2" : p.get("address2"),
+        "city" : p.get("city"),
+        "crossStreet" : p.get("cross_street"),
+        "description" : p.get("description"),
+        "distance" : p.get("location").distance * 3959,
+        "lat" : p.get("location").lat,
+        "lon" : p.get("location").lon,
+        "name" : p.get("name"),
+        "phone" : p.get("phone"),
+        "precise" : true,
+        "state" : p.get("state"),
+        "url" : p.get("url"),
+        "urlCaption" : p.get("url_caption"),
+        "zip" : p.get("zip")
+      }; 
+    }
+    this.mergeProviders(providers);
+    if (!this.queryingSurescripts) {
+      this.providers = this.newProviders;
+      this.trigger(LocationsModel.PROVIDERS_CHANGE_EVENT, this.providers);
+    }
   },
   handleSurescripts : function(result) {
-    this.providers = result.providers;
-    this.trigger(LocationsModel.PROVIDERS_CHANGE_EVENT, this.providers);
+    this.queryingSurescripts = false;
+    this.mergeProviders(result.providers);
+    if (!this.queryingDatabase) {
+      this.providers = this.newProviders;
+      this.trigger(LocationsModel.PROVIDERS_CHANGE_EVENT, this.providers);
+    }
   },
-  querySurescripts : function() {
+  mergeProviders : function(providers) {
+    if (!this.newProviders) {
+      this.newProviders = providers;
+      return;
+    }
+    var providers2 = this.newProviders;
+    var size = providers2.length + providers.length;
+    if (size > 20) {
+      size = 20;
+    }
+    this.newProviders = new Array(size);
+    var x = 0, x2 = 0;
+    for ( i = 0; i < size; i++) {
+      if (x2 >= providers2.length || (x < providers.length && providers[x].distance < providers2[x2].distance)) {
+        this.newProviders[i] = providers[x];
+        x++;
+      } else {
+        this.newProviders[i] = providers2[x2];
+        x2++;
+      }
+    }
+
+  },
+  queryForLocations : function() {
+    this.queryingDatabase = true;
+    this.queryingSurescripts = true;
+    this.newProviders = null;
+    
+    // flatfile
+    // GeoPoint(lat, lon) has some constraints:
+    //  lat: -90,90 (both inclusive)
+    //  lon: -180 (inclusive), 180 (exclusive)
+    var geopoint = new StackMob.GeoPoint(this.location.lat(), this.location.lng());
+    var q = new StackMob.Collection.Query();
+    q.mustBeNearMi("location", geopoint, 20); // TODO
+    var locs = new ScreeningLocs();
+    locs.query(q, {
+      success : _.bind(this.handleDatabase, this),
+      error : function(model, response) {
+        // TODO display error
+        console.error("Error querying database: " + response);
+        console.debug(model);
+      }
+    });
+
+    // surescripts    
     $.getJSON(SURESCRIPTS_URL, {
       apikey : SURESCRIPTS_API_KEY,
       lat : this.location.lat(),
       lon : this.location.lng(),
-      radius : 50, // TODO - options
+      radius : 20, // TODO - options
       maxResults : 20
     }, _.bind(this.handleSurescripts, this)).fail(function(data) {
+      // TODO display error
       console.error("Error calling Surescripts API: " + data.statusText + " (code " + data.status + ")");
     });
   }
@@ -1063,14 +1154,14 @@ var LocDetailsView = Backbone.View.extend({
     }
     var index = this.$el.data("url").split("=")[1];
     var provider = this.model.providers[index];
-    var phone = provider.phone.slice(0, 3) + "-" + provider.phone.slice(3, 6) + "-" + provider.phone.slice(6);
+    // var phone = provider.phone.slice(0, 3) + "-" + provider.phone.slice(3, 6) + "-" + provider.phone.slice(6);
 
     this.$(".name").html(provider.name);
-    this.$(".address a").html(provider.address1 + "<br>" + provider.city + ", " + provider.state + " " + provider.zip.substring(0, 5));
+    this.$(".address a").html(provider.address1 + " (" + provider.distance.toPrecision(1) + " miles)" + "<br>" + provider.city + ", " + provider.state + " " + provider.zip.substring(0, 5));
     this.$(".address a").attr("href", MAPS_URL + encodeURIComponent(provider.address1 + ", " + provider.city + ", " + provider.state + ", " + provider.zip.substring(0, 5)));
-    this.$(".phone a").html(phone);
+    this.$(".phone a").html(provider.phone);
     this.$(".phone a").attr("href", "tel:" + provider.phone);
-    this.$(".url a").html(provider.urlCaption);
+    this.$(".url a").html(provider.urlCaption ? provider.urlCaption : provider.url);
     this.$(".url a").attr("href", provider.url);
     this.$(".description").html(provider.description);
   }
@@ -1640,7 +1731,7 @@ var ResultView2 = Backbone.View.extend({
   },
   events : {
     "click .retry-button" : "handleRetry",
-    "pagebeforeshow" : "handlePageBeforeShow",
+    "pagebeforeshow" : "handlePageBeforeShow"
   },
   handlePageBeforeShow : function(e, data) {
     this.model.calculateRisk();
@@ -1772,7 +1863,7 @@ var ResultView = Backbone.View.extend({
     this.riskViewRendered = false;
   },
   events : {
-    "pagebeforeshow" : "handlePageBeforeShow",
+    "pagebeforeshow" : "handlePageBeforeShow"
   },
   handlePageBeforeShow : function(e, data) {
     this.model.calculateRisk();
